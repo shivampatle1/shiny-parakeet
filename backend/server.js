@@ -14,7 +14,20 @@ const galleryRoutes = require('./routes/gallery');
 const app = express();
 
 // Middleware
-app.use(cors({ origin: '*' }));
+const allowedOrigins = [
+  'https://shiny-parakeet-ldp8.vercel.app',
+  'http://localhost:5173' // keep local dev working
+];
+app.use(cors({
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true
+}));
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
