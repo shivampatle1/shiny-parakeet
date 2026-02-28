@@ -9,7 +9,7 @@ const { protect } = require('../middleware/auth');
 const router = express.Router();
 
 // ─── Multer setup for profile pictures ───────────────────────────────────────
-// On Vercel, only /tmp is writable
+// On Vercel, write to memory instead of disk
 const isVercel = process.env.VERCEL || process.env.NODE_ENV === 'production';
 const uploadDir = isVercel ? '/tmp' : path.join(__dirname, '../uploads');
 
@@ -18,13 +18,15 @@ if (!isVercel && !fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, uploadDir),
-    filename: (req, file, cb) => {
-        const safe = Date.now() + '_' + file.originalname.replace(/\s+/g, '_');
-        cb(null, safe);
-    },
-});
+const storage = isVercel
+    ? multer.memoryStorage()
+    : multer.diskStorage({
+        destination: (req, file, cb) => cb(null, uploadDir),
+        filename: (req, file, cb) => {
+            const safe = Date.now() + '_' + file.originalname.replace(/\s+/g, '_');
+            cb(null, safe);
+        },
+    });
 const upload = multer({
     storage,
     limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
@@ -99,7 +101,7 @@ router.post('/register', upload.single('profilePicture'), async (req, res) => {
             password,
             role,
             status: role === 'student' ? 'pending' : 'approved',
-            profilePicture: req.file ? req.file.filename : '',
+            profilePicture: req.file && !isVercel ? req.file.filename : '',
         };
 
         if (role === 'student') {
