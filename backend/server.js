@@ -35,11 +35,17 @@ mongoose
   .then(async () => {
     console.log('✅ MongoDB connected');
     await seedNotices();
-    app.listen(process.env.PORT, () =>
-      console.log(`🚀 Server running on port ${process.env.PORT}`)
-    );
+    // Only listen if not running on Vercel
+    if (process.env.NODE_ENV !== 'production') {
+      app.listen(process.env.PORT, () =>
+        console.log(`🚀 Server running on port ${process.env.PORT}`)
+      );
+    }
   })
   .catch((err) => console.error('❌ MongoDB connection failed:', err));
+
+// Export for Vercel serverless
+module.exports = app;
 
 // Seed sample notices on startup
 async function seedNotices() {
