@@ -12,7 +12,11 @@ const router = express.Router();
 // On Vercel, only /tmp is writable
 const isVercel = process.env.VERCEL || process.env.NODE_ENV === 'production';
 const uploadDir = isVercel ? '/tmp' : path.join(__dirname, '../uploads');
-if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
+
+// Only try to make directory if not on Vercel
+if (!isVercel && !fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+}
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, uploadDir),
