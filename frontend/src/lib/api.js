@@ -1,5 +1,6 @@
-const BASE = `${import.meta.env.VITE_API_URL}/api`;
-const UPLOADS = `${import.meta.env.VITE_API_URL}/uploads`;
+const API_URL = import.meta.env.VITE_API_URL || '';
+const BASE = API_URL.endsWith('/api') ? API_URL : `${API_URL}/api`;
+const UPLOADS = API_URL.endsWith('/api') ? API_URL.replace(/\/api$/, '/uploads') : `${API_URL}/uploads`;
 
 export async function apiFetch(path, options = {}, token = null) {
     const headers = { 'Content-Type': 'application/json', ...options.headers };
